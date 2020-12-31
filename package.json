@@ -1,0 +1,13 @@
+{
+    "name": "jw-demo-plugin",
+    "devDependencies": {
+        "gulp": "~4.*",
+        "gulp-minify": "^3.1.0",
+        "gulp-sass": "~4.*",
+        "gulp-uglify": "~3.*",
+        "gulp-uglifycss": "~1.*"
+    },
+    "dependencies": {
+        "gulp-update": "0.0.2"
+    }
+}

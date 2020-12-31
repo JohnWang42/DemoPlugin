@@ -2,5 +2,6 @@
 .idea/
 .DS_Store
 
-#Composer files
+#Development files
 vendor/
+node_modules/
