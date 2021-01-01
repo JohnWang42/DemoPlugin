@@ -9,6 +9,9 @@ Author URI: https://johnnywang.dev/
 License: GPLv3
 */
 
+//directory URL for scripts, stylesheets, etc
+define('JWDEMO_DIR', plugins_url('', __FILE__));
+
 register_activation_hook(__FILE__, 'jw_demo_setup');
 /**
  * Setup permalink, scripts, and styles for the plugin
@@ -50,10 +53,9 @@ add_filter('template_include', 'jw_get_users');
  */
 function jw_get_users($template)
 {
-    $plugin_path = plugin_dir_url(__DIR__);
     if ($query_var = get_query_var('jw-demo')) {
-        wp_enqueue_script('jw-demo-script', $plugin_path.'/js/jw-demo-script.js', array(), '0.1');
-        wp_enqueue_style('jw-demo-style', $plugin_path.'/style.css', array(), '0.1');
+        wp_enqueue_script('jw-demo-script', JWDEMO_DIR.'/js/jw-demo-script.js', array(), '0.1');
+        wp_enqueue_style('jw-demo-style', JWDEMO_DIR.'/style.css', array(), '0.1');
         return plugin_dir_path(__FILE__).'/templates/users.php';
     } else {
         return $template;
