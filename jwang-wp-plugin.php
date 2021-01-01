@@ -8,204 +8,227 @@ Author: Johnny Wang
 Author URI: https://johnnywang.dev/
 License: GPLv3
 */
+namespace JW;
 
 //directory URL for scripts, stylesheets, etc
 define('JWDEMO_DIR', plugins_url('', __FILE__));
 
-register_activation_hook(__FILE__, 'jw_demo_setup');
-/**
- * Setup permalink, scripts, and styles for the plugin
- *
- * @return void
- */
-function jw_demo_setup()
+class DemoPlugin
 {
-    jw_demo_users();
-    flush_rewrite_rules();
-}
+    private static $instance = false;
 
-register_deactivation_hook(__FILE__, 'jw_demo_cleanup');
-/**
- * Remove the permalink for the plugin
- */
-function jw_demo_cleanup()
-{
-    remove_rewrite_tag('jw-demo');
-    remove_permastruct('jw-demo');
-    flush_rewrite_rules();
-}
-
-add_action('init', 'jw_demo_users');
-/**
- * Hook the permalink for the plugin
- */
-function jw_demo_users()
-{
-    add_rewrite_tag('%jw-demo%', '([^/]+)');
-    add_permastruct('jw-demo', '/%jw-demo%/');
-}
-
-add_filter('template_include', 'jw_display_users');
-/**
- * Load template file for displaying the users table
- * @param string
- * @return string
- */
-function jw_display_users($template): string
-{
-    if ($query_var = get_query_var('jw-demo')) {
-        wp_enqueue_script('jw-demo-script', JWDEMO_DIR.'/js/jw-demo-script.js', array(), '0.1');
-        wp_enqueue_style('jw-demo-style', JWDEMO_DIR.'/style.css', array(), '0.1');
-        //provide ajax endpoint, nonce, and initial user data
-        wp_localize_script('jw-demo-script', 'jwdemo', array(
-            'ajaxurl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('jw-demo'),
-            'users' => jw_get_users()
-        ));
-        return plugin_dir_path(__FILE__).'/templates/users.php';
-    } else {
-        return $template;
-    }
-}
-
-add_action('wp_ajax_nopriv_get_users', 'jw_ajax_get_users');
-/**
- * Provide AJAX access to the jw_get_users function
- */
-function jw_ajax_get_users()
-{
-    //verify nonce
-    $nonce = $_POST['nonce'];
-    if (empty($_POST) || !wp_verify_nonce($nonce, 'jw-demo')) {
-        wp_send_json_error(
-            array(
-            'success' => false,
-            'msg' => 'Unable to verify request.',
-            ),
-            400
-        );
-    }
-    //retrieve users and send to user
-    $users = jw_get_users();
-    if ($users) {
-        wp_send_json_success(
-            array(
-                'success' => true,
-                'users' => $users
-            )
-        );
-    }
-    //report errors
-    wp_send_json_error(
-        array(
-            'success' => false,
-            'msg' => 'Unable to get users'
-        ),
-        500
-    );
-}
-
-/**
- * Gets JSON of user data from API or cache if available
- * @return string | bool
- */
-function jw_get_users()
-{
-    //check if cache exists
-    $users = get_transient('jw_users');
-    if ($users) {
-        return json_decode($users);
+    public function __construct()
+    {
+        //setup
+        register_activation_hook(__FILE__, array($this, 'demoSetup'));
+        register_deactivation_hook(__FILE__, array($this, 'demoCleanup'));
+        //permalink
+        add_action('init', array($this, 'demoUsers'));
+        add_filter('template_include', array($this, 'displayUsers'));
+        //AJAX functions
+        add_action('wp_ajax_nopriv_get_users', array($this, 'ajaxGetUsers'));
+        add_action('wp_ajax_nopriv_get_user', array($this, 'ajaxGetUser'));
     }
 
-    //obtain data from API
-    $req = wp_remote_get('https://jsonplaceholder.typicode.com/users');
-    if (is_wp_error($req)) {
-        return false;
+    /**
+     * Returns an instance of itself or creates it if it doesn't exist
+     * @return bool|DemoPlugin
+     */
+    public static function getInstance()
+    {
+        if (!self::$instance) {
+            self::$instance = new self;
+        }
+        return self::$instance;
     }
-    $userdata = wp_remote_retrieve_body($req);
-    //set cache for user data
-    set_transient('jw_users', $userdata, 60);
-    return json_decode($userdata);
-}
-//https://jsonplaceholder.typicode.com/users?id=3
 
+    /**
+     * Setup permalink, scripts, and styles for the plugin
+     */
+    public function demoSetup()
+    {
+        $this-demoUsers();
+        flush_rewrite_rules();
+    }
 
-add_action('wp_ajax_nopriv_get_user', 'jw_ajax_get_user');
-/**
- * Provide AJAX access to the jw_get_user function
- */
-function jw_ajax_get_user()
-{
-    //verify nonce
-    $nonce = $_POST['nonce'];
-    if (empty($_POST) || !wp_verify_nonce($nonce, 'jw-demo')) {
+    /**
+     * Remove the permalink for the plugin
+     */
+    public function demoCleanup()
+    {
+        remove_rewrite_tag('jw-demo');
+        remove_permastruct('jw-demo');
+        flush_rewrite_rules();
+    }
+
+    /**
+     * Hook the permalink for the plugin
+     */
+    public function demoUsers()
+    {
+        add_rewrite_tag('%jw-demo%', '([^/]+)');
+        add_permastruct('jw-demo', '/%jw-demo%/');
+    }
+
+    /**
+     * Load template file for displaying the users table
+     * @param string
+     * @return string
+     */
+    public function displayUsers($template): string
+    {
+        if ($query_var = get_query_var('jw-demo')) {
+            wp_enqueue_script('jw-demo-script', JWDEMO_DIR.'/js/jw-demo-script.js', array(), '0.1');
+            wp_enqueue_style('jw-demo-style', JWDEMO_DIR.'/style.css', array(), '0.1');
+            //provide ajax endpoint, nonce, and initial user data
+            wp_localize_script('jw-demo-script', 'jwdemo', array(
+                'ajaxurl' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('jw-demo'),
+                'users' => $this->getUsers()
+            ));
+            return plugin_dir_path(__FILE__).'/templates/users.php';
+        } else {
+            return $template;
+        }
+    }
+
+    /**
+     * Provide AJAX access to the getUsers function
+     */
+    public function ajaxGetUsers()
+    {
+        //verify nonce
+        $nonce = $_POST['nonce'];
+        if (empty($_POST) || !wp_verify_nonce($nonce, 'jw-demo')) {
+            wp_send_json_error(
+                array(
+                    'success' => false,
+                    'msg' => 'Unable to verify request.'
+                ),
+                400
+            );
+        }
+        //retrieve users and send to user
+        $users = $this->getUsers();
+        if ($users) {
+            wp_send_json_success(
+                array(
+                    'success' => true,
+                    'users' => $users
+                )
+            );
+        }
+        //report errors
         wp_send_json_error(
             array(
                 'success' => false,
-                'msg' => 'Unable to verify request.',
+                'msg' => 'Unable to get users'
             ),
-            400
+            500
         );
     }
-    if (empty($_POST['jw_userid'])) {
+
+    /**
+     * Gets JSON of user data from API or cache if available
+     * @return string | bool
+     */
+    private function getUsers()
+    {
+        //check if cache exists
+        $users = get_transient('jw_users');
+        if ($users) {
+            return json_decode($users);
+        }
+
+        //obtain data from API
+        $req = wp_remote_get('https://jsonplaceholder.typicode.com/users');
+        if (is_wp_error($req)) {
+            return false;
+        }
+        $userdata = wp_remote_retrieve_body($req);
+        //set cache for user data
+        set_transient('jw_users', $userdata, 60);
+        return json_decode($userdata);
+    }
+
+    /**
+     * Provide AJAX access to the getUser function
+     */
+    public function ajaxGetUser()
+    {
+        //verify nonce
+        $nonce = $_POST['nonce'];
+        if (empty($_POST) || !wp_verify_nonce($nonce, 'jw-demo')) {
+            wp_send_json_error(
+                array(
+                    'success' => false,
+                    'msg' => 'Unable to verify request.'
+                ),
+                400
+            );
+        }
+        if (empty($_POST['jw_userid'])) {
+            wp_send_json_error(
+                array(
+                    'success' => false,
+                    'msg' => 'Must specify user ID'
+                ),
+                400
+            );
+        }
+        if (!is_numeric($_POST['jw_userid'])) {
+            wp_send_json_error(
+                array(
+                    'success' => false,
+                    'msg' => 'Not a valid user ID'
+                ),
+                400
+            );
+        }
+        $user_id = (int)$_POST['jw_userid'];
+        //retrieve users and send to user
+        $user = $this->getUser($user_id);
+        if ($user) {
+            wp_send_json_success(
+                array(
+                    'success' => true,
+                    'user' => $user
+                )
+            );
+        }
+        //report errors
         wp_send_json_error(
             array(
                 'success' => false,
-                'msg' => 'Must specify user ID',
+                'msg' => 'Unable to find user'
             ),
-            400
+            500
         );
-    }
-    if (!is_numeric($_POST['jw_userid'])) {
-        wp_send_json_error(
-            array(
-                'success' => false,
-                'msg' => 'Not a valid user ID',
-            ),
-            400
-        );
-    }
-    $user_id = (int)$_POST['jw_userid'];
-    //retrieve users and send to user
-    $user = jw_get_user($user_id);
-    if ($user) {
-        wp_send_json_success(
-            array(
-                'success' => true,
-                'user' => $user
-            )
-        );
-    }
-    //report errors
-    wp_send_json_error(
-        array(
-            'success' => false,
-            'msg' => 'Unable to find user'
-        ),
-        500
-    );
-}
-
-/**
- * Get info of a specific user by ID
- * @param int $id
- * @return string
- */
-function jw_get_user(int $id)
-{
-    //check if cache exists
-    $user = get_transient('jw_user_'.$id);
-    if ($user) {
-        return json_decode($user);
     }
 
-    //obtain data from API
-    $req = wp_remote_get("https://jsonplaceholder.typicode.com/users?id=$id");
-    if (is_wp_error($req)) {
-        return false;
+    /**
+     * Get info of a specific user by ID
+     * @param int $id
+     * @return string
+     */
+    private function getUser(int $id)
+    {
+        //check if cache exists
+        $user = get_transient('jw_user_'.$id);
+        if ($user) {
+            return json_decode($user);
+        }
+
+        //obtain data from API
+        $req = wp_remote_get("https://jsonplaceholder.typicode.com/users?id=$id");
+        if (is_wp_error($req)) {
+            return false;
+        }
+        $userdata = wp_remote_retrieve_body($req);
+        //set cache for user data
+        set_transient('jw_user_'.$id, $userdata, 60);
+        return json_decode($userdata);
     }
-    $userdata = wp_remote_retrieve_body($req);
-    //set cache for user data
-    set_transient('jw_user_'.$id, $userdata, 60);
-    return json_decode($userdata);
 }
+
+$jwDemoPlugin = DemoPlugin::getInstance();
