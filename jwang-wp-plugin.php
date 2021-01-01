@@ -107,7 +107,8 @@ function jw_ajax_get_users()
 }
 
 /**
- * Gets JSON of user data from API
+ * Gets JSON of user data from API or cache if available
+ * @return string | bool
  */
 function jw_get_users()
 {
@@ -125,5 +126,5 @@ function jw_get_users()
     $userdata = wp_remote_retrieve_body($req);
     //set cache for user data
     set_transient('jw_users', $userdata, 60);
-    return json_decode(wp_remote_retrieve_body($req));
+    return json_decode($userdata);
 }
