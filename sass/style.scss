@@ -1,5 +1,6 @@
 @import "normalize";
 @import "vars";
+@import "utils";
 
 @font-face {
   font-family: "Open Sans";
@@ -12,7 +13,7 @@
   font-weight: bold;
 }
 
-body {
+.jw-demo {
   font-family: $default_font;
   font-size: 16px;
 }
