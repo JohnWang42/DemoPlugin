@@ -11,12 +11,12 @@ function minSass() {
 }
 
 function minJs() {
-    return src('./js/src/*.js')
+    return src('./js/*.js')
         .pipe(minify({
-            noSource: false,
+            noSource: true,
+            ignoreFiles: ['-min.js'],
             ext: {
-                src: '-debug.js',
-                min: '.js'
+                min: '-min.js'
             }
         }))
         .pipe(dest('./js'));
