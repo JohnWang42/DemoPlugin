@@ -1,1 +1,1 @@
-document.addEventListener("DOMContentLoaded",function(){console.log("Demo Script Loaded")});
+function getUsers(){let o=new URLSearchParams({action:"get_users",nonce:jwdemo.nonce});fetch(jwdemo.ajaxurl,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:o.toString()}).then(o=>o.json()).then(o=>{console.log("Success"),console.log(o)}).catch(o=>{console.log("Error"),console.log(o)})}document.addEventListener("DOMContentLoaded",function(){console.log("Demo Script Loaded"),console.log(jwdemo)});
