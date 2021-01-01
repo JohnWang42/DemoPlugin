@@ -111,9 +111,19 @@ function jw_ajax_get_users()
  */
 function jw_get_users()
 {
+    //check if cache exists
+    $users = get_transient('jw_users');
+    if ($users) {
+        return json_decode($users);
+    }
+
+    //obtain data from API
     $req = wp_remote_get('https://jsonplaceholder.typicode.com/users');
     if (is_wp_error($req)) {
         return false;
     }
+    $userdata = wp_remote_retrieve_body($req);
+    //set cache for user data
+    set_transient('jw_users', $userdata, 60);
     return json_decode(wp_remote_retrieve_body($req));
 }
