@@ -54,7 +54,7 @@ add_filter('template_include', 'jw_display_users');
 function jw_display_users($template): string
 {
     if ($query_var = get_query_var('jw-demo')) {
-        wp_enqueue_script('jw-demo-script', JWDEMO_DIR.'/js/jw-demo-script-debug.js', array(), '0.1');
+        wp_enqueue_script('jw-demo-script', JWDEMO_DIR.'/js/jw-demo-script.js', array(), '0.1');
         wp_enqueue_style('jw-demo-style', JWDEMO_DIR.'/style.css', array(), '0.1');
         //provide ajax endpoint, nonce, and initial user data
         wp_localize_script('jw-demo-script', 'jwdemo', array(
@@ -81,7 +81,6 @@ function jw_ajax_get_users()
             array(
             'success' => false,
             'msg' => 'Unable to verify request.',
-            'nonce' => $nonce
             ),
             400
         );
@@ -126,5 +125,87 @@ function jw_get_users()
     $userdata = wp_remote_retrieve_body($req);
     //set cache for user data
     set_transient('jw_users', $userdata, 60);
+    return json_decode($userdata);
+}
+//https://jsonplaceholder.typicode.com/users?id=3
+
+
+add_action('wp_ajax_nopriv_get_user', 'jw_ajax_get_user');
+/**
+ * Provide AJAX access to the jw_get_user function
+ */
+function jw_ajax_get_user()
+{
+    //verify nonce
+    $nonce = $_POST['nonce'];
+    if (empty($_POST) || !wp_verify_nonce($nonce, 'jw-demo')) {
+        wp_send_json_error(
+            array(
+                'success' => false,
+                'msg' => 'Unable to verify request.',
+            ),
+            400
+        );
+    }
+    if (empty($_POST['jw_userid'])) {
+        wp_send_json_error(
+            array(
+                'success' => false,
+                'msg' => 'Must specify user ID',
+            ),
+            400
+        );
+    }
+    if (!is_numeric($_POST['jw_userid'])) {
+        wp_send_json_error(
+            array(
+                'success' => false,
+                'msg' => 'Not a valid user ID',
+            ),
+            400
+        );
+    }
+    $user_id = (int)$_POST['jw_userid'];
+    //retrieve users and send to user
+    $user = jw_get_user($user_id);
+    if ($user) {
+        wp_send_json_success(
+            array(
+                'success' => true,
+                'user' => $user
+            )
+        );
+    }
+    //report errors
+    wp_send_json_error(
+        array(
+            'success' => false,
+            'msg' => 'Unable to find user'
+        ),
+        500
+    );
+}
+
+/**
+ * Get info of a specific user by ID
+ * @param int $id
+ * @return string
+ */
+function jw_get_user(int $id)
+{
+    //check if cache exists
+    $user = get_transient('jw_user_'.$id);
+    if ($user) {
+        return json_decode($user);
+    }
+
+    //obtain data from API
+    $req = wp_remote_get("https://jsonplaceholder.typicode.com/users?id=$id");
+    if (is_wp_error($req)) {
+        return false;
+    }
+    $userdata = wp_remote_retrieve_body($req);
+    //set cache for user data
+    set_transient('jw_user_'.$id, $userdata, 60);
     return json_decode($userdata);
 }

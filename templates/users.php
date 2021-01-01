@@ -8,7 +8,9 @@ get_header();
         <div class="container">
             <h1>Demo Plugin</h1>
             <table id="jw-demo-users">
-                <button onclick="getUsers()">Test Fire</button>
+                <button onclick="getUsers()">Get All Users</button>
+                <input id="userid" type="number">
+                <button onclick="getUser(document.getElementById('userid').value)">Get One User</button>
             </table>
         </div>
     </div>
