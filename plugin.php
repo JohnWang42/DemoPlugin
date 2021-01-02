@@ -13,4 +13,4 @@ define('PLUGIN_URL', plugins_url('', __FILE__));
 include PLUGIN_PATH.'src/DemoPlugin.php';
 use JW\DemoPlugin;
 
-$jwDemoPlugin = DemoPlugin::getInstance();
+DemoPlugin::register();

@@ -12,3 +12,7 @@ Included is a gulpfile I typically use on projects to automate compilation of my
 ## Caching Implementation ##
 
 For caching, I used the WordPress Transients API. It automatically serializes any JSON that is obtained and implements WordPress's built-in caching. This allows it to automatically integrate with any caching the user might implement such as memcached.
+
+## Testing Implementation ##
+
+I used the suggested combo of PHPUnit and Brain Monkey to integrate testing into this plugin. Run `./vendor/bin/phpunit --testdox tests` to see test results.

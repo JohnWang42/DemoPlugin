@@ -5,18 +5,34 @@ class DemoPlugin
 {
     private static $instance = false;
 
-    public function __construct()
+    /**
+     * Returns an instance of itself or creates it if it doesn't exist
+     * @return bool|DemoPlugin
+     */
+    public static function getInstance()
     {
-        //setup
-        register_activation_hook(__FILE__, array($this, 'demoSetup'));
-        register_deactivation_hook(__FILE__, array($this, 'demoCleanup'));
+        if (!self::$instance) {
+            self::$instance = new self;
+        }
+        return self::$instance;
+    }
+
+    /**
+     * DemoPlugin constructor. Private to follow the singelton pattern
+     */
+    private function __construct()
+    {
+    }
+
+    public static function register()
+    {
+        $self = self::getInstance();
+        register_activation_hook(__FILE__, array($self, 'demoSetup'));
+        register_deactivation_hook(__FILE__, array($self, 'demoCleanup'));
         //permalink
-        $this->setupPermalinks();
+        $self->setupPermalinks();
         //AJAX functions
-        add_action('wp_ajax_jwGetUsers', array($this, 'ajaxGetUsers'));
-        add_action('wp_ajax_nopriv_jwGetUsers', array($this, 'ajaxGetUsers'));
-        add_action('wp_ajax_jwGetUser', array($this, 'ajaxGetUser'));
-        add_action('wp_ajax_nopriv_jwGetUser', array($this, 'ajaxGetUser'));
+        $self->setupAjaxHooks();
     }
 
     /**
@@ -29,15 +45,14 @@ class DemoPlugin
     }
 
     /**
-     * Returns an instance of itself or creates it if it doesn't exist
-     * @return bool|DemoPlugin
+     * Add hooks for AJAX calls
      */
-    public static function getInstance()
+    public function setupAjaxHooks()
     {
-        if (!self::$instance) {
-            self::$instance = new self;
-        }
-        return self::$instance;
+        add_action('wp_ajax_jwGetUsers', array($this, 'ajaxGetUsers'));
+        add_action('wp_ajax_nopriv_jwGetUsers', array($this, 'ajaxGetUsers'));
+        add_action('wp_ajax_jwGetUser', array($this, 'ajaxGetUser'));
+        add_action('wp_ajax_nopriv_jwGetUser', array($this, 'ajaxGetUser'));
     }
 
     /**

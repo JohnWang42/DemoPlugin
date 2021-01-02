@@ -1,6 +1,5 @@
 <?php declare(strict_types=1);
-namespace JW\Utils;
-
+require_once __DIR__."/../src/DemoPlugin.php";
 use PHPUnit\Framework\TestCase;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Brain\Monkey;
@@ -10,10 +9,39 @@ class DemoPluginTest extends TestCase
 {
     use MockeryPHPUnitIntegration;
 
-    public function testPermalinks()
+    protected function setUp(): void
     {
-        (new DemoPlugin())->setupPermalinks();
-        self::assertNotFalse(has_action('init', [DemoPlugin::class, 'init']));
-        self::assertNotFalse(has_action('template_include', [DemoPlugin::class, 'template_include']));
+        parent::setUp();
+        Monkey\setUp();
+    }
+
+    protected function tearDown(): void
+    {
+        Monkey\tearDown();
+        parent::tearDown();
+    }
+
+    /**
+     * Tests that the permalink action and filter have been properly included
+     */
+    public function testPermalink()
+    {
+        $plugin = DemoPlugin::getInstance();
+        $plugin->setupPermalinks();
+        self::assertNotFalse(has_action('init', [$plugin, 'demoUsers']));
+        self::assertNotFalse(has_filter('template_include', [$plugin, 'displayUsers']));
+    }
+
+    /**
+     * Tests that the AJAX hooks are in place
+     */
+    public function testAjaxHooks()
+    {
+        $plugin = DemoPlugin::getInstance();
+        $plugin->setupAjaxHooks();
+        self::assertNotFalse(has_action('wp_ajax_jwGetUsers', [$plugin, 'ajaxGetUsers']));
+        self::assertNotFalse(has_action('wp_ajax_nopriv_jwGetUsers', [$plugin, 'ajaxGetUsers']));
+        self::assertNotFalse(has_action('wp_ajax_jwGetUser', [$plugin, 'ajaxGetUser']));
+        self::assertNotFalse(has_action('wp_ajax_nopriv_jwGetUser', [$plugin, 'ajaxGetUser']));
     }
 }
