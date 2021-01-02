@@ -14,9 +14,9 @@ function minJs() {
     return src('./js/*.js')
         .pipe(minify({
             noSource: true,
-            ignoreFiles: ['-min.js'],
+            ignoreFiles: ['*.min.js'],
             ext: {
-                min: '-min.js'
+                min: '.min.js'
             }
         }))
         .pipe(dest('./js'));
