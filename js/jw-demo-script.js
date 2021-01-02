@@ -6,8 +6,8 @@ document.addEventListener('DOMContentLoaded', function () {
 function getUsers()
 {
     let params = new URLSearchParams({
-        action: 'get_users',
-        nonce: jwdemo.nonce
+        action: 'jwGetUsers',
+        nonce: jwdemo._nonce
     });
 
     fetch(jwdemo.ajaxurl, {
@@ -30,9 +30,9 @@ function getUsers()
 function getUser(id)
 {
     let params = new URLSearchParams({
-        action: 'get_user',
+        action: 'jwGetUser',
         jw_userid: id,
-        nonce: jwdemo.nonce
+        nonce: jwdemo._nonce
     });
 
     fetch(jwdemo.ajaxurl, {
