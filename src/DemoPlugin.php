@@ -1,17 +1,5 @@
 <?php declare(strict_types = 1);
-/*
-Plugin Name: Johnny Wang Demo Plugin
-Plugin URI: https://johnnywang.dev/wp-demo
-Description: Demo Plugin for Inpsyde
-Version: 1.0
-Author: Johnny Wang
-Author URI: https://johnnywang.dev/
-License: GPLv3
-*/
 namespace JW;
-
-//directory URL for scripts, stylesheets, etc
-define('JWDEMO_DIR', plugins_url('', __FILE__));
 
 class DemoPlugin
 {
@@ -23,13 +11,21 @@ class DemoPlugin
         register_activation_hook(__FILE__, array($this, 'demoSetup'));
         register_deactivation_hook(__FILE__, array($this, 'demoCleanup'));
         //permalink
-        add_action('init', array($this, 'demoUsers'));
-        add_filter('template_include', array($this, 'displayUsers'));
+        $this->setupPermalinks();
         //AJAX functions
         add_action('wp_ajax_jwGetUsers', array($this, 'ajaxGetUsers'));
         add_action('wp_ajax_nopriv_jwGetUsers', array($this, 'ajaxGetUsers'));
         add_action('wp_ajax_jwGetUser', array($this, 'ajaxGetUser'));
         add_action('wp_ajax_nopriv_jwGetUser', array($this, 'ajaxGetUser'));
+    }
+
+    /**
+     * Hooks for creating permalink leading to plugin page
+     */
+    public function setupPermalinks()
+    {
+        add_action('init', array($this, 'demoUsers'));
+        add_filter('template_include', array($this, 'displayUsers'));
     }
 
     /**
@@ -80,15 +76,15 @@ class DemoPlugin
     public function displayUsers($template): string
     {
         if ($query_var = get_query_var('jw-demo')) {
-            wp_enqueue_script('jw-demo-script', JWDEMO_DIR.'/js/jw-demo-script.js', array(), '0.1');
-            wp_enqueue_style('jw-demo-style', JWDEMO_DIR.'/style.css', array(), '0.1');
+            wp_enqueue_script('jw-demo-script', PLUGIN_URL.'/js/jw-demo-script.js', array(), '0.1');
+            wp_enqueue_style('jw-demo-style', PLUGIN_URL.'/style.css', array(), '0.1');
             //provide ajax endpoint, , and initial user data
             wp_localize_script('jw-demo-script', 'jwdemo', array(
                 'ajaxurl' => admin_url('admin-ajax.php'),
                 '_nonce' => wp_create_nonce('jw_demo_nonce'),
                 'users' => $this->getUsers()
             ));
-            return plugin_dir_path(__FILE__).'/templates/users.php';
+            return PLUGIN_PATH.'templates/users.php';
         } else {
             return $template;
         }
@@ -230,5 +226,3 @@ class DemoPlugin
         return json_decode($userdata);
     }
 }
-
-$jwDemoPlugin = DemoPlugin::getInstance();
