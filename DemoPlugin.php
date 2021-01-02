@@ -26,8 +26,10 @@ class DemoPlugin
         add_action('init', array($this, 'demoUsers'));
         add_filter('template_include', array($this, 'displayUsers'));
         //AJAX functions
-        add_action('wp_ajax_nopriv_get_users', array($this, 'ajaxGetUsers'));
-        add_action('wp_ajax_nopriv_get_user', array($this, 'ajaxGetUser'));
+        add_action('wp_ajax_jwGetUsers', array($this, 'ajaxGetUsers'));
+        add_action('wp_ajax_nopriv_jwGetUsers', array($this, 'ajaxGetUsers'));
+        add_action('wp_ajax_jwGetUser', array($this, 'ajaxGetUser'));
+        add_action('wp_ajax_nopriv_jwGetUser', array($this, 'ajaxGetUser'));
     }
 
     /**
@@ -47,7 +49,7 @@ class DemoPlugin
      */
     public function demoSetup()
     {
-        $this-demoUsers();
+        $this->demoUsers();
         flush_rewrite_rules();
     }
 
@@ -80,10 +82,10 @@ class DemoPlugin
         if ($query_var = get_query_var('jw-demo')) {
             wp_enqueue_script('jw-demo-script', JWDEMO_DIR.'/js/jw-demo-script.js', array(), '0.1');
             wp_enqueue_style('jw-demo-style', JWDEMO_DIR.'/style.css', array(), '0.1');
-            //provide ajax endpoint, nonce, and initial user data
+            //provide ajax endpoint, , and initial user data
             wp_localize_script('jw-demo-script', 'jwdemo', array(
                 'ajaxurl' => admin_url('admin-ajax.php'),
-                'nonce' => wp_create_nonce('jw-demo'),
+                '_nonce' => wp_create_nonce('jw_demo_nonce'),
                 'users' => $this->getUsers()
             ));
             return plugin_dir_path(__FILE__).'/templates/users.php';
@@ -98,8 +100,7 @@ class DemoPlugin
     public function ajaxGetUsers()
     {
         //verify nonce
-        $nonce = $_POST['nonce'];
-        if (empty($_POST) || !wp_verify_nonce($nonce, 'jw-demo')) {
+        if (empty($_POST) || !wp_verify_nonce($_POST['nonce'], 'jw_demo_nonce')) {
             wp_send_json_error(
                 array(
                     'success' => false,
@@ -132,7 +133,7 @@ class DemoPlugin
      * Gets JSON of user data from API or cache if available
      * @return string | bool
      */
-    private function getUsers()
+    public function getUsers()
     {
         //check if cache exists
         $users = get_transient('jw_users');
@@ -157,8 +158,7 @@ class DemoPlugin
     public function ajaxGetUser()
     {
         //verify nonce
-        $nonce = $_POST['nonce'];
-        if (empty($_POST) || !wp_verify_nonce($nonce, 'jw-demo')) {
+        if (empty($_POST) || !wp_verify_nonce($_POST['nonce'], 'jw_demo_nonce')) {
             wp_send_json_error(
                 array(
                     'success' => false,
@@ -211,7 +211,7 @@ class DemoPlugin
      * @param int $id
      * @return string
      */
-    private function getUser(int $id)
+    public function getUser(int $id)
     {
         //check if cache exists
         $user = get_transient('jw_user_'.$id);
