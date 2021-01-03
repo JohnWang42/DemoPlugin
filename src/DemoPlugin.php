@@ -114,7 +114,6 @@ class DemoPlugin
         if (empty($_POST) || !wp_verify_nonce($_POST['nonce'], 'jw_demo_nonce')) {
             wp_send_json_error(
                 array(
-                    'success' => false,
                     'msg' => 'Unable to verify request.'
                 ),
                 400
@@ -125,7 +124,6 @@ class DemoPlugin
         if ($users) {
             wp_send_json_success(
                 array(
-                    'success' => true,
                     'users' => $users
                 )
             );
@@ -133,7 +131,6 @@ class DemoPlugin
         //report errors
         wp_send_json_error(
             array(
-                'success' => false,
                 'msg' => 'Unable to get users'
             ),
             500
@@ -172,7 +169,6 @@ class DemoPlugin
         if (empty($_POST) || !wp_verify_nonce($_POST['nonce'], 'jw_demo_nonce')) {
             wp_send_json_error(
                 array(
-                    'success' => false,
                     'msg' => 'Unable to verify request.'
                 ),
                 400
@@ -181,7 +177,6 @@ class DemoPlugin
         if (empty($_POST['jw_userid'])) {
             wp_send_json_error(
                 array(
-                    'success' => false,
                     'msg' => 'Must specify user ID'
                 ),
                 400
@@ -190,7 +185,6 @@ class DemoPlugin
         if (!is_numeric($_POST['jw_userid'])) {
             wp_send_json_error(
                 array(
-                    'success' => false,
                     'msg' => 'Not a valid user ID'
                 ),
                 400
@@ -202,7 +196,6 @@ class DemoPlugin
         if ($user) {
             wp_send_json_success(
                 array(
-                    'success' => true,
                     'user' => $user
                 )
             );
@@ -210,7 +203,6 @@ class DemoPlugin
         //report errors
         wp_send_json_error(
             array(
-                'success' => false,
                 'msg' => 'Unable to find user'
             ),
             500
