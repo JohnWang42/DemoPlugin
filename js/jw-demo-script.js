@@ -129,10 +129,12 @@ function closeDetails()
     });
 }
 
-function lockTable() {
+function lockTable()
+{
     document.getElementById('jw-demo-modal').classList.remove('hidden');
 }
 
-function unlockTable() {
+function unlockTable()
+{
     document.getElementById('jw-demo-modal').classList.add('hidden');
 }
