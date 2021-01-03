@@ -9,6 +9,8 @@ Included is a gulpfile I typically use on projects to automate compilation of my
 1. Run `npm install`
 2. Then use the command `gulp`. The default will convert the SCSS into a singular style file as well as minify the JS & CSS.
 
+The existing JS and CSS files are ready for deployment already if you don't feel like testing this.
+
 ## Caching Implementation ##
 
 For caching, I used the WordPress Transients API. It automatically serializes any JSON that is obtained and implements WordPress's built-in caching. This allows it to automatically integrate with any caching the user might implement such as memcached.
