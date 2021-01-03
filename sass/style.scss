@@ -65,3 +65,17 @@
     }
   }
 }
+
+#jw-msg-box {
+  border: 2px solid black;
+  padding: 10px;
+  margin-bottom: 10px;
+
+  &.success {
+    border-color: $green;
+  }
+
+  &.error {
+    border-color: $red;
+  }
+}
