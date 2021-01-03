@@ -16,3 +16,26 @@ For caching, I used the WordPress Transients API. It automatically serializes an
 ## Testing Implementation ##
 
 I used the suggested combo of PHPUnit and Brain Monkey to integrate testing into this plugin. Run `./vendor/bin/phpunit --testdox tests` to see test results.
+
+The tests implemented check if the hooks are getting implemented properly.
+
+## Composer Packages ##
+
+Linting and Code Style Enforcement
+
+* `inpsyde/php-coding-standards`
+* `"squizlabs/php_codesniffer`
+
+Unit Testing
+
+* `brain/monkey`
+* `phpunit/phpunit`
+
+PHP required version and extension
+
+* `php`
+* `ext-json` (Ensures extension is installed to enable usage of `json_encode` and `json_decode`)
+
+Support for specifying installation paths for Composer
+
+* `composer/installers` (in conjuction with the `type` option)
