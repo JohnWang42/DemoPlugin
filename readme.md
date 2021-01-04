@@ -41,3 +41,10 @@ PHP required version and extension
 Support for specifying installation paths for Composer
 
 * `composer/installers` (in conjuction with the `type` option)
+
+### Contact Info ###
+Johnny Wang
+
+jwang.dev@gmail.com
+
+610-714-0061
